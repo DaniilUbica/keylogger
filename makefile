@@ -1,7 +1,13 @@
 CC = gcc
 CCFLAGS = -Wall -Wextra -Werror
-OBJS = main.o
-all: ${OBJS}
-		$(CC) $(CCFLAGS) -o main ${OBJS}
+OBJS = main.o functions.o
+SRC = main.c ./src/functions.c
 
-clean: rm *.o main
+# all: ${OBJS}
+# 	$(CC) $(CCFLAGS) -o main ${OBJS}
+
+all: ${SRC}
+	$(CC) ${CCFLAGS} -o main ${SRC}
+
+clean: 
+	rm *.o main
