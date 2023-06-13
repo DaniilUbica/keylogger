@@ -6,4 +6,5 @@ It has a client-server architecture, made with WinSock.
 App uses WinApi to hook keystrokes
 
 # Example of request in server's console:
-![image](https://github.com/DaniilUbica/my_keylogger/assets/102466617/b3ee07e1-2fe0-4fd3-9fc2-7bfed38680d9)
+
+![screen](https://github.com/DaniilUbica/keylogger/assets/102466617/9a2ee17d-86aa-4ee9-9357-94b61839be9f)
