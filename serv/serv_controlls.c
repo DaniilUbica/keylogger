@@ -6,9 +6,6 @@ WORD dll_version = MAKEWORD(2, 1);
 SOCKADDR_IN addr;
 int sizeofaddr = sizeof(addr);
 
-SOCKET connections[MAX_CONNECTIONS];
-size_t connections_count = 0;
-
 void set_server_options() {
     if (WSAStartup(dll_version, &wsa_data) != 0) {
         printf("Error, can`t start wsa");
@@ -20,11 +17,11 @@ void set_server_options() {
 	addr.sin_family = AF_INET;
 }
 
-void client_hadler(size_t index) {
+void client_hadler(SOCKET conn) {
     char msg[512];
 
     while(1) {
-        recv(connections[index], msg, sizeof(msg), NULL);
+        recv(conn, msg, sizeof(msg), NULL);
         printf("%s", msg);
     }
 }
@@ -36,17 +33,14 @@ void server_listen() {
 	listen(s_listen, SOMAXCONN);
 
 	SOCKET new_connection;
-    for (int i = 0; i < MAX_CONNECTIONS; i++) {
+    while (1) {
         new_connection = accept(s_listen, (SOCKADDR*)&addr, &sizeofaddr);
 
         if(new_connection == 0) {
             printf("Error #2\n");
         } 
         else {
-            connections[i] = new_connection;
-            connections_count++;
-
-            CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)client_hadler, (LPVOID)(i), NULL, NULL);
+            CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)client_hadler, (LPVOID)(new_connection), NULL, NULL);
         }
     }
 }

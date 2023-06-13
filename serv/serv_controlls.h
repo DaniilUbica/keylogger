@@ -9,9 +9,6 @@ extern WORD dll_version;
 extern SOCKADDR_IN addr;
 extern int sizeofaddr;
 
-extern SOCKET connections[MAX_CONNECTIONS];
-extern size_t connections_count;
-
 void set_server_options();
 
 void client_hadler(size_t index);
